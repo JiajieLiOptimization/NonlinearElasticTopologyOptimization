@@ -1,0 +1,264 @@
+/////////////////////////////////////////////////////////////////////////
+// Phase field (Allen-Cahn) for topology optimization of structures 2D
+/////////////////////////////////////////////////////////////////////////
+load "iovtk"
+
+int Dirichlet = 12;
+int Neumann = 1;
+int[int] Free = [2,3,4,5,6,7,8,9,10,11];
+mesh3 th = readmesh3("Cantilever3dExp2");
+int nbvertices=th.nv;
+int nbNeighbor = 50;
+int nbtriangles = th.nt; 
+int numTri;
+int num = 100;
+int kk = 0;
+
+real[int, int] MapV2N(nbvertices, nbNeighbor);
+MapV2N=-666;
+for (int k=0;k<nbvertices;k++)
+{
+      numTri = 0;
+
+      for (int i=0;i<nbtriangles;i++)
+      {
+        for (int j=0; j <4; j++)
+          if (th(k)==th[i][j])
+          {
+            MapV2N(k,numTri) = i;
+            numTri=numTri+1;
+          }
+      }
+
+}
+
+//savevtk("InitialMesh.vtk", Th);
+int[int] ll=labels(th);  
+macro el(x1,x2,x3) [dx(x1), dy(x2), dz(x3), (dy(x1)+dx(x2)), (dz(x1)+dx(x3)), (dz(x2)+dy(x3))] //
+macro enl(x1,x2,x3)[(dx(x1)*dx(x1)+dx(x2)*dx(x2)+dx(x3)*dx(x3))/2, (dy(x1)*dy(x1)+dy(x2)*dy(x2)+dy(x3)*dy(x3))/2,
+                    (dz(x1)*dz(x1)+dz(x2)*dz(x2)+dz(x3)*dz(x3))/2, (dx(x1)*dy(x1)+dx(x2)*dy(x2)+dx(x3)*dy(x3)),
+                    (dx(x1)*dz(x1)+dx(x2)*dz(x2)+dx(x3)*dz(x3)), (dy(x1)*dz(x1)+dy(x2)*dz(x2)+dy(x3)*dz(x3))] //
+macro e(x1,x2,x3) (el(x1,x2,x3)+enl(x1,x2,x3))//
+macro denl(x1,x2,x3,x4,x5,x6) [(dx(x1)*dx(x4)+dx(x2)*dx(x5)+dx(x3)*dx(x6)), (dy(x1)*dy(x4)+dy(x2)*dy(x5)+dy(x3)*dy(x6)),
+                  (dz(x1)*dz(x4)+dz(x2)*dz(x5)+dz(x3)*dz(x6)),
+                  (dx(x4)*dy(x1)+dx(x1)*dy(x4)+dx(x5)*dy(x2)+dx(x2)*dy(x5)+dx(x6)*dy(x3)+dx(x3)*dy(x6)),
+                  (dx(x4)*dz(x1)+dx(x1)*dz(x4)+dx(x5)*dz(x2)+dx(x2)*dz(x5)+dx(x6)*dz(x3)+dx(x3)*dz(x6)),
+                  (dy(x4)*dz(x1)+dy(x1)*dz(x4)+dy(x5)*dz(x2)+dy(x2)*dz(x5)+dy(x6)*dz(x3)+dy(x3)*dz(x6))]//
+macro de(x1,x2,x3,x4,x5,x6) (el(x4,x5,x6)+denl(x1,x2,x3,x4,x5,x6))//
+macro grad(u)[dx(u), dy(u), dz(u)]//
+macro er()[u1xR, u2yR, u3zR, (u1yR+u2xR), (u1zR+u3xR), (u2zR+u3yR)]+[(u1xR*u1xR+u2xR*u2xR+u3xR*u3xR)/2, (u1yR*u1yR+u2yR*u2yR+u3yR*u3yR)/2,
+                    (u1zR*u1zR+u2zR*u2zR+u3zR*u3zR)/2, (u1xR*u1yR+u2xR*u2yR+u3xR*u3yR),
+                    (u1xR*u1zR+u2xR*u2zR+u3xR*u3zR), (u1yR*u1zR+u2yR*u2zR+u3yR*u3zR)] //
+macro elr() [v1xR, v2yR, v3zR,v1yR+v2xR, v1zR+v3xR, v2zR+v3yR] //
+
+fespace Vh(th,P1);
+Vh ux,uy,uz, vx,vy,vz, uxd,uyd,uzd, uxa,uya,uza, vxa,vya,vza, uxn,uyn,uzn;
+Vh E,theta,thetaold,thetanew,psi,r;
+Vh u1xR, u1yR, u1zR, u2xR, u2yR, u2zR, u3xR, u3yR, u3zR;
+Vh v1xR, v1yR, v1zR, v2xR, v2yR, v2zR, v3xR, v3yR, v3zR;
+
+
+fespace P0h(th,P0);
+P0h gradu1x, gradu1y, gradu1z, gradu2x, gradu2y, gradu2z, gradu3x, gradu3y, gradu3z;
+P0h gradv1x, gradv1y, gradv1z, gradv2x, gradv2y, gradv2z, gradv3x, gradv3y, gradv3z;
+
+real nu=0.4;
+real lambda = nu/((1+nu)*(1-2*nu));
+real mu = 1/(2*(1+nu));
+real E1=3e9;
+real E0=1e-9*E1;
+real gx = 0;
+real gy = -2.25e5;
+real gz = 0;
+real t = 1.0;
+real resold;
+real eta = 5;
+real dt = 0.0025;
+real Sta1 = 1.0;
+real Sta2 = 0.5;
+real kappa = 1e-3;
+real beta = 500.0;
+real VolTarg = 0.45*int3d(th)(1);
+real lag=0;
+real vol;
+int p=2;
+int MaxIter=120;
+int PhaseIterNum = 10;
+func D=[[2*mu+lambda, lambda, lambda, 0, 0, 0],
+        [lambda, 2*mu+lambda, lambda, 0, 0, 0],
+        [lambda, lambda, 2*mu+lambda, 0, 0, 0],
+        [0,      0,      0,          mu, 0, 0],
+        [0,      0,      0,          0, mu, 0],
+        [0,      0,      0,          0, 0, mu]];
+
+
+theta = 0.5; 
+thetaold = theta;
+E = theta^p*(E1 - E0) + E0;
+
+
+for(int iter=1; iter<MaxIter;iter++){
+    cout<<"Optimization iter:"<<iter<<" begin."<<endl;
+    ux=0;uy=0;uz=0;
+    uxd=0;uyd=0;uzd=0;
+    for (int iner = 1;  iner <= 3;  iner ++){
+           cout << "Nonlinear FEA inner loop"      <<
+     iner << " starts..."<< endl;
+          solve  nonlinear ([uxd,uyd,uzd],  [vx,vy,vz])=int3d(th)(E*(de(ux, uy, uz, uxd, uyd, uzd)'*D*de (ux, uy, uz, vx, vy, vz))+ (E*e(ux, uy, uz)'*D*denl (vx, vy, vz, uxd, uyd, uzd)))
+          +int3d(th)(E*((e(ux, uy, uz)'*D*de (ux, uy, uz, vx, vy, vz))))- int2d(th,  Neumann)(gx*vx+gy*vy+gz*vz)+
+         on(Dirichlet, uxd = 0, uyd = 0, uzd=0);
+               if(iner==1)  real ress = uxd[] .linfty;
+                real res=uxd[].linfty;
+                ux = ux + t*uxd;
+                uy = uy + t*uyd;
+                uz = uz + t*uzd;
+               cout  <<  "  .Linfty residual="<< res <<  endl;
+               if (res > resold)
+                t = 0.5*t;
+                else
+                t= 1.01*t;
+              if (res<1e-5)  break;
+              resold = res;
+    }
+    uxn=-ux;uyn=-uy;uzn=-uz;
+    solve nladjoint ([uxa,uya,uza],  [vxa,vya,vza])=int3d (th) (E* (de (uxn, uyn, uzn, uxa, uya, uza)'*D*de (uxn, uyn, uzn, vxa, vya, vza) )
+                                                   + (E*e(uxn, uyn, uzn)'*D*denl(vxa, vya, vza, uxa, uya, uza)))
+                                                   -int2d(th,Neumann) (gx*vxa+gy*vya+gz*vza)+ on(Dirichlet,  uxa=0, uya=0, uza=0);
+
+u1xR = dx(ux);u1yR = dy(ux);u1zR = dz(ux);u2xR = dx(uy);u2yR = dy(uy);u2zR = dz(uy);u3xR = dx(uz);u3yR = dy(uz);u3zR = dz(uz);
+v1xR = dx(uxa);v1yR = dy(uxa);v1zR = dz(uxa);v2xR = dx(uya);v2yR = dy(uya);v2zR = dz(uya);v3xR = dx(uza);v3yR = dy(uza);v3zR = dz(uza);
+gradu1x=dx(ux);gradu1y=dy(ux);gradu1z=dz(ux);gradu2x=dx(uy);gradu2y=dy(uy);gradu2z=dz(uy);gradu3x=dx(uz);gradu3y=dy(uz);gradu3z=dz(uz);
+gradv1x=dx(uxa);gradv1y=dy(uxa);gradv1z=dz(uxa);gradv2x=dx(uya);gradv2y=dy(uya);gradv2z=dz(uya);gradv3x=dx(uza);gradv3y=dy(uza);gradv3z=dz(uza);
+//对所有点做遍历
+real vdxu1, vdyu1, vdzu1, vdxu2, vdyu2, vdzu2, vdxu3, vdyu3, vdzu3;
+real vdxv1, vdyv1, vdzv1, vdxv2, vdyv2, vdzv2, vdxv3, vdyv3, vdzv3;
+for (int k=0;k<nbvertices;k++)
+{
+  real value1 = 0,value2=0,value3=0,value4=0,value5=0,value6=0,value7=0,value8=0;
+  real value9 = 0,value10=0,value11=0,value12=0,value13=0,value14=0,value15=0,value16=0;
+  real value17=0, value18=0;
+  int cc = 0;
+  for (int s=0;s<nbNeighbor;s++)
+  {
+    if (MapV2N(k,s) > -1)
+    {
+      cc= cc+1;
+    }
+  }
+  for (int p=0;p<cc;p++)
+  {
+    int q = MapV2N(k,p);
+    vdxu1 = gradu1x[][q];
+    vdyu1 = gradu1y[][q];
+    vdzu1 = gradu1z[][q];
+
+    vdxu2 = gradu2x[][q];
+    vdyu2 = gradu2y[][q];
+    vdzu2 = gradu2z[][q];
+
+    vdxu3 = gradu3x[][q];
+    vdyu3 = gradu3y[][q];
+    vdzu3 = gradu3z[][q];
+
+
+    vdxv1 = gradv1x[][q];
+    vdyv1 = gradv1y[][q];
+    vdzv1 = gradv1z[][q];
+
+    vdxv2 = gradv2x[][q];
+    vdyv2 = gradv2y[][q];
+    vdzv2 = gradv2z[][q];
+
+    vdxv3 = gradv3x[][q];
+    vdyv3 = gradv3y[][q];
+    vdzv3 = gradv3z[][q];
+
+    value1 = value1+vdxu1;
+    value2 = value2+vdyu1;
+    value3 = value3+vdzu1;
+
+    value4 = value4+vdxu2;
+    value5 = value5+vdyu2;
+    value6 = value6+vdzu2;
+
+    value7 = value7+vdxu3;
+    value8 = value8+vdyu3;
+    value9 = value9+vdzu3;
+
+    value10 = value10+vdxv1;
+    value11 = value11+vdyv1;
+    value12 = value12+vdzv1;
+
+    value13 = value13+vdxv2;
+    value14 = value14+vdyv2;
+    value15 = value15+vdzv2;
+
+    value16 = value16+vdxv3;
+    value17 = value17+vdyv3;
+    value18 = value18+vdzv3;
+  }
+  u1xR[][k]=value1/cc;
+	u1yR[][k]=value2/cc;
+  u1zR[][k]=value3/cc;
+	u2xR[][k]=value4/cc;
+	u2yR[][k]=value5/cc;
+  u2zR[][k]=value6/cc;
+	u3xR[][k]=value7/cc;
+	u3yR[][k]=value8/cc;
+  u3zR[][k]=value9/cc;
+
+  v1xR[][k]=value10/cc;
+	v1yR[][k]=value11/cc;
+  v1zR[][k]=value12/cc;
+	v2xR[][k]=value13/cc;
+	v2yR[][k]=value14/cc;
+  v2zR[][k]=value15/cc;
+  v3xR[][k]=value16/cc;
+	v3yR[][k]=value17/cc;
+  v3zR[][k]=value18/cc;
+}
+
+   real norm = int3d(th)((-theta*(E1 - E0)*((elr )'*D* (er)))^2);
+   real sqrtnorm = sqrt(norm);
+
+   // updating r
+   r = -eta/sqrtnorm*( -theta*(E1 - E0)*((elr) )'*D* (er)) ;
+
+problem AllenCahn(theta,psi) = int3d(th)(theta*psi) - int3d(th)( thetaold*psi)
++ int3d(th)( dt*kappa*grad(theta)'*grad(psi))
++ int3d(th)(Sta1*dt*theta*psi)-int3d(th)(Sta1*dt*thetaold*psi) + int3d(th)(Sta2*dt*grad(theta)'*grad(psi))-int3d(th)(Sta2*dt*grad(thetaold)'*grad(psi))
++ int3d(th)(dt*beta*(vol-VolTarg)*psi+dt*lag*psi)
+- int3d(th)(1/(0.1)*dt*thetaold*(1-thetaold)*(thetaold-0.5)*psi)
+- int3d(th)(dt*r*psi);
+
+  for(int k=0;k<PhaseIterNum;k++)
+  {
+     AllenCahn;
+     thetaold =theta;
+     thetaold = max(0,thetaold);
+     thetaold = min(thetaold,1);
+		 vol = int3d(th)(thetaold);
+  }
+     theta = max(0,theta);
+     theta = min(theta,1);
+     lag = lag+0.5*(vol-VolTarg);
+   E = theta^p*(E1 - E0) + E0;
+
+   real J = int2d(th,  Neumann) (gx*ux + gy*uy + gz*uz) ;
+real   Wtotal = J + 0.5*beta*(vol-VolTarg)^2 + int3d(th)(0.5*kappa*grad(theta)'*grad(theta)+1/(0.1)*0.25*(theta-1)^2*theta^2);
+ofstream obj("obj.txt",append);
+obj<<J<<endl;
+ofstream TotalEner("totalEnergy.txt",append);
+TotalEner<<Wtotal<<endl;
+ofstream Volerr("Volerr.txt",append);
+Volerr<<abs(vol-VolTarg)<<endl;
+string caption= " Objective: "+J +" total energy: "+Wtotal+" volume error: "+ abs(vol-VolTarg)+ " iter :"+iter;
+plot(theta,cmm=caption,fill =1,value=0);
+if (iter%5==0)
+{
+string outputFile1 = "./Vel" +iter+ ".vtk";
+string outputFile3 = "./Phi" +iter+ ".vtk";
+
+savevtk(outputFile3,th,theta,dataname="phi");
+}
+}
