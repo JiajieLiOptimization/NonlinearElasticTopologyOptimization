@@ -1,0 +1,30 @@
+  .Linfty residual=1.12901e-07
+  -- Solve :
+          min -0.000698593  max 8.28633e-05
+  -- Solve :
+          min -0.00601222  max 1.04759
+  -- Solve :
+          min -0.00601167  max 1.04759
+  -- Solve :
+          min -0.00601114  max 1.04759
+  -- Solve :
+          min -0.00601062  max 1.04759
+  -- Solve :
+          min -0.00601011  max 1.04759
+  -- Solve :
+          min -0.0060096  max 1.04759
+  -- Solve :
+          min -0.00600902  max 1.04759
+  -- Solve :
+          min -0.00600842  max 1.04759
+  -- Solve :
+          min -0.00600784  max 1.04759
+  -- Solve :
+          min -0.00600728  max 1.04759
+iter =101;comp=5.04807;vol =: 0.257518___________
+times: compile 0.124s, execution 369.771s,  mpirank:0
+ ######## We forget of deleting   57602 Nb pointer,   0Bytes  ,  mpirank 0, memory leak =0
+ CodeAlloc : nb ptr  6865,  size :650280 mpirank: 0
+Ok: Normal End
+ try getConsole C:\Users\user\Desktop\∑«œﬂ–‘µØ–‘”≈ªØ\”≈ªØÀ„∑®\Exp2\Low Force\V0.45\PhaseField_NonlinearElastic_DSSI.edp
+`^„ 

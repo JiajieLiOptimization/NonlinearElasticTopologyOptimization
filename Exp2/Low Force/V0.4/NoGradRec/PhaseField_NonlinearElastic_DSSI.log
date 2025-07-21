@@ -1,0 +1,28 @@
+  -- Solve :
+          min -0.00741336  max 0.000858241
+  -- Solve :
+          min -0.0112285  max 1.10533
+  -- Solve :
+          min -0.0112269  max 1.10533
+  -- Solve :
+          min -0.0112255  max 1.10533
+  -- Solve :
+          min -0.0112243  max 1.10534
+  -- Solve :
+          min -0.0112234  max 1.10534
+  -- Solve :
+          min -0.0112225  max 1.10534
+  -- Solve :
+          min -0.0112217  max 1.10534
+  -- Solve :
+          min -0.0112208  max 1.10534
+  -- Solve :
+          min -0.0112199  max 1.10534
+  -- Solve :
+          min -0.0112189  max 1.10534
+iter =71;comp=547.6;vol =: 0.231265___________
+times: compile 0.142s, execution 249.527s,  mpirank:0
+ ######## We forget of deleting   40980 Nb pointer,   0Bytes  ,  mpirank 0, memory leak =0
+ CodeAlloc : nb ptr  6864,  size :650096 mpirank: 0
+Ok: Normal End
+ try getConsole C:\Users\user\Desktop\非线性弹性优化\优化算法\Exp2\Low Force\V0.4\NoGradRec\PhaseField_NonlinearElastic_xw%~DSSI.edp

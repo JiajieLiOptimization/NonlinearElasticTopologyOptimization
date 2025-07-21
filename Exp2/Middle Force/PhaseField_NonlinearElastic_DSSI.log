@@ -1,0 +1,29 @@
+Nonlinear FEA inner loop3 starts...
+  -- Solve :
+          min -3.25789e-06  max 3.04883e-07
+  .Linfty residual=3.25789e-06
+  -- Solve :
+          min -0.00725367  max 0.000837611
+  -- Solve :
+          min -0.0110029  max 1.07693
+  -- Solve :
+          min -0.011002  max 1.07693
+  -- Solve :
+          min -0.0110012  max 1.07693
+  -- Solve :
+          min -0.0110003  max 1.07693
+  -- Solve :
+          min -0.0109994  max 1.07693
+  -- Solve :
+          min -0.0109986  max 1.07693
+  -- Solve :
+          min -0.0109977  max 1.07693
+  -- Solve :
+          min -0.0109969  max 1.07693
+  -- Solve :
+          min -0.010996  max 1.07693
+  -- Solve :
+          min -0.0109952  max 1.07693
+iter =121;comp=534.974;vol =: 0.239943___________
+times: compile 0.196s, execution 779.821s,  mpirank:0
+ try getConsole C:\Users\user\Desktop\非线性弹性优化\优化算法\Exp2\Middle Force\PhaseField_NonlinearElastic_DSSI.edp
