@@ -1,0 +1,15 @@
+  -- Solve :
+          min -0.00269868  max 1.06771
+  -- Solve :
+          min -0.0026983  max 1.06771
+  -- Solve :
+          min -0.00269796  max 1.06772
+  -- Solve :
+          min -0.00269768  max 1.06772
+  -- Solve :
+          min -0.00269742  max 1.06772
+  -- Solve :
+          min -0.00269719  max 1.06772
+iter =151;comp=1.78812e+06;vol =: 1.93864___________
+times: compile 0.107s, execution 2088.83s,  mpirank:0
+ try getConsole C:\Users\user\Desktop\非线性弹性优化\优化算法\Exp3\different lo :151ads\PhaseField_NonlinearElastic_DSSI.edp

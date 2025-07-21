@@ -1,0 +1,28 @@
+  -- Solve :
+          min -1.30052e-05  max 3.20359e-06
+  -- Solve :
+          min -0.00722025  max 2.26537
+  -- Solve :
+          min -0.00718402  max 2.2654
+  -- Solve :
+          min -0.00716496  max 2.26542
+  -- Solve :
+          min -0.00715499  max 2.26544
+  -- Solve :
+          min -0.00715  max 2.26544
+  -- Solve :
+          min -0.00714769  max 2.26545
+  -- Solve :
+          min -0.00714829  max 2.26545
+  -- Solve :
+          min -0.00715128  max 2.26544
+  -- Solve :
+          min -0.00715554  max 2.26544
+  -- Solve :
+          min -0.00716585  max 2.26544
+iter =151;comp=0.0194242;vol =: 1.93887___________
+times: compile 0.191s, execution 300.344s,  mpirank:0
+ ######## We forget of deleting   67380 Nb pointer,   0Bytes  ,  mpirank 0, memory leak =0
+ CodeAlloc : nb ptr  7959,  size :681816 mpirank: 0
+Ok: Normal End
+ try getConsole C:\Users\user\Desktop\·ÇÏßÐÔµ¯ÐÔÓÅ»¯\ÓÅ»¯Ëã·¨\Exp3\different loads\smallLoad\PhaseField_NonlinearElasticˆë}+þ_DSSI.edp

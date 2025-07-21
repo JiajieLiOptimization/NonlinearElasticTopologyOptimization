@@ -1,0 +1,29 @@
+  .Linfty residual=1.47515e-08
+  -- Solve :
+          min -0.00129317  max 0.000321543
+  -- Solve :
+          min -0.00485961  max 1.15776
+  -- Solve :
+          min -0.00485931  max 1.15776
+  -- Solve :
+          min -0.00485906  max 1.15776
+  -- Solve :
+          min -0.00485886  max 1.15776
+  -- Solve :
+          min -0.00485869  max 1.15776
+  -- Solve :
+          min -0.00485853  max 1.15776
+  -- Solve :
+          min -0.00485861  max 1.15776
+  -- Solve :
+          min -0.00485882  max 1.15776
+  -- Solve :
+          min -0.004859  max 1.15776
+  -- Solve :
+          min -0.00485916  max 1.15776
+iter =151;comp=192.362;vol =: 1.94026___________
+times: compile 0.12s, execution 667.952s,  mpirank:0
+ ######## We forget of deleting   67658 Nb pointer,   0Bytes  ,  mpirank 0, memory leak =0
+ CodeAlloc : nb ptr  6529,  size :642160 mpirank: 0
+Ok: Normal End
+ try getConsole C:\Users\user\Desktop\非线性弹性优化\优化算法\Exp3\little stab\PhaseField_NonlinearElastic_DSSI.edp
