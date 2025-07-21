@@ -1,0 +1,126 @@
+macro el(x1,x2) [dx(x1),(dx(x2)+dy(x1)),dy(x2)]//
+macro enl(x1,x2) [(dx(x1)*dx(x1)+dx(x2)*dx (x2))/2,(dx(x1)*dy(x1)+dx(x2)*dy(x2)),(dy(x1)*dy(x1)+dy(x2)*dy(x2))/2]//
+macro denl(x1,x2,x3,x4) [(dx(x1)*dx(x3)+dx(x2)*dx(x4)),(dx(x1)*dy(x3)+dx(x2)*dy(x4)+dx(x3)*dy(x1)+dx(x4)*dy(x2)),(dy(x1)*dy(x3)+dy(x2)*dy(x4))]//
+macro e(x1,x2) (el(x1,x2)+enl(x1,x2))//
+macro de(x1,x2,x3,x4) (el(x3,x4)+denl(x1,x2,x3,x4))//
+macro grad(u)[dx(u), dy(u)]//
+
+real L=4;
+real W=1;
+real E1=3e9;
+real E0=1e-9*E1;
+real nu=0.4;
+real fx=0;
+real fy=-2.5e6;
+real fxa=0;
+real fya=fy;
+real volfrac=0.5;
+real p=1;
+real chg=1;
+int s=1;
+int i=0;
+int Imax=50;
+int loaded=1,free=2,fixed=3;
+int PhaseIterNum = 10;
+real dt = 0.007;
+real Sta1 = 100.0;
+real Sta2 = 1.0;
+real kappa = 1e-8;
+real beta = 100.0;
+real lag = 0.0;
+real eta = 30;
+real resold;
+real t = 1.0;
+border b1(t=-0.025*W,0.025*W){x=0.5*L;y=t;label=loaded;}
+border b2(t=0.025*W,0.5*W){x=0.5*L; y=t;label=free;}
+border b3(t = 0.5*L, -0.5*L){x = t; y =0.5*W;label = free;}
+border b4(t = 0.5*W,  -0.5*W){x = -0.5*L;y=t; label = fixed;}
+border b5(t = -0.5*L, 0.5*L){x = t; y = -0.5*W; label = free;}
+border b6(t  = -0.5*W,-0.025*W){x = 0.5*L;  y=t;  label = free;}
+mesh th = buildmesh (b1(2*s)  + b2(24*s)  + b3(200*s)  + b4(50*s)  +b5(200*s)  + b6(24*s));
+fespace Vh(th,  [P1,  P1]) ;
+Vh [ux, uy],  [vx, vy],  [uxd, uyd],  [uxa,  uya], [vxa,  vya],  [uxn,  uyn];
+fespace Vh1(th,  P1) ;
+Vh1 E,theta,thetaold,thetanew,dtheta,sens,sensn,sensv,psi,r;
+theta =0.5;
+E = theta^p*(E1 - E0) + E0;
+real  lambda = nu/((1+nu)*(1-2*nu));
+real mu = 1/(2*(1+nu));
+real a11 = 2*mu + lambda,a12 = 0,a13=lambda ;
+real a22= mu, a23 = 0;
+real a33 = 2*mu + lambda;
+func D=[[a11,a12,a13],[a12,a22,a23],[a13,a23,a33]];
+real VolTarg = 0.5*int2d(th)(1);
+real vol = int2d(th)(theta);
+
+
+plot(theta,fill =1,ps="ini.eps");
+while (chg > 1e-3 && i<=Imax) {
+  
+  resold = 1e5;
+
+  if (i==Imax-1 || i==3 || i==10 || i==20)
+  {plot(theta,fill =1,ps="shape"+i+".eps");}
+
+    i = i + 1; thetaold =theta;
+    p = min(3., p+(i%5==0)*0.2);
+    [ux, uy] = [0, 0];  
+    [uxd, uyd] = [0, 0];
+    for (int iner = 1;  iner <= 30;  iner ++){
+           cout << "Nonlinear FEA inner loop"      <<
+     iner << " starts..."<< endl;
+          solve  nonlinear ([uxd,uyd],  [vx,vy])=int2d(th)(E*(de(ux, uy, uxd, uyd)'*D*de (ux, uy, vx, vy))+ (E*e(ux, uy)'*D*denl (vx, vy, uxd, uyd)))+int2d (th)(E*((e(ux, uy)'*D*de (ux, uy, vx,vy))))- int1d(th,  loaded)(fx*vx + fy*vy)+
+         on(fixed, uxd = 0, uyd = 0);
+               if(iner==1)  real ress = uxd[] .linfty;
+                real res=uxd[].linfty;
+                [ux,uy] =[ux + t*uxd, uy + t*uyd];
+               cout  <<  "  .Linfty residual="<< res <<  endl;
+               if (res > resold)
+                t = 0.5*t;
+                else
+                t= 1.01*t;
+              if (res<1e-3*ress)  break;
+              resold = res;
+    }
+    [uxn, uyn] = [-ux,  -uy];
+    solve nladjoint ([uxa,uya],  [vxa,vya])=int2d (th) (E* (de (uxn, uyn, uxa, uya)'*D*de (uxn, uyn, vxa, vya) )+ (E*e(uxn, uyn)'*D*denl(vxa, vya, uxa, uya))) -int1d(th,loaded) (fxa*vxa+fya*vya)+ on(fixed,  uxa=0 ,uya=0);
+    
+  real norm = int2d(th)((-theta*(E1 - E0)*((el(uxa,uya) )'*D* (e(ux, uy))))^2); 
+  real sqrtnorm = sqrt(norm);
+
+  // updating r
+  r = -eta/sqrtnorm*( -theta*(E1 - E0)*((el(uxa,uya) )'*D* (e(ux, uy))) );
+
+problem AllenCahn(theta,psi) = int2d(th)(theta*psi) - int2d(th)( thetaold*psi)
++ int2d(th)( dt*kappa*grad(theta)'*grad(psi))
++ int2d(th)(Sta1*dt*theta*psi)-int2d(th)(Sta1*dt*thetaold*psi) + int2d(th)(Sta2*dt*grad(theta)'*grad(psi))-int2d(th)(Sta2*dt*grad(thetaold)'*grad(psi)) 
++ int2d(th)(dt*beta*(vol-VolTarg)*psi+dt*lag*psi)
+- int2d(th)(1/(0.01)*dt*thetaold*(1-thetaold)*(thetaold-0.5)*psi)
+- int2d(th)(dt*r*psi);
+
+  for(int k=0;k<PhaseIterNum;k++)
+  {
+     AllenCahn;
+     thetaold =theta;
+     thetaold = max(0,thetaold);
+     thetaold = min(thetaold,1);
+		 vol = int2d(th)(thetaold);
+  }
+     theta = max(0,theta);
+     theta = min(theta,1);
+     lag = lag+0.5*(vol-VolTarg);
+E = theta*(E1 - E0) + E0;
+
+real J = int1d(th,  loaded) (fx*ux + fy*uy) ;
+real   Wtotal = J + 0.5*beta*(vol-VolTarg)^2 + int2d(th)(0.5*kappa*grad(theta)'*grad(theta)+1/(0.01)*0.25*(theta-1)^2*theta^2);
+    ofstream obj("obj.txt",append);
+	obj<<J<<endl;
+  	ofstream TotalEner("totalEnergy.txt",append);
+	TotalEner<<Wtotal<<endl;
+ofstream Volerr("Volerr.txt",append);
+Volerr<<abs(vol-VolTarg)<<endl;
+string caption= " Objective: "+J +" total energy: "+Wtotal+" volume error: "+ (vol-VolTarg)+ " iter :"+i;
+plot(theta,cmm=caption,fill =1,value=0);
+//plot([ux,uy],cmm=caption,fill =1,value=1);
+cout <<"iter ="  << i   <<";comp="<<J<<";vol =: "<<vol <<"___________"<<endl ;
+}

@@ -1,0 +1,29 @@
+a) [dx(theta), dy(theta)]+1/(0.01)*0.25*(theta-1)^2*theta^2);
+  116 :     ofstream obj("obj.txt",append);
+  117 :         obj<<J<<endl;
+  118 :         ofstream TotalEner("totalEnergy.txt",append);
+  119 :         TotalEner<<Wtotal<<endl;
+  120 : ofstream Volerr("Volerr.txt",append);
+  121 : Volerr<<abs(vol-VolTarg)<<endl;
+  122 : string caption= " Objective: "+J +" total energy: "+Wtotal+" volume error: "+ (vol-VolTarg)+ " iter :"+i;
+  123 : plot(theta,cmm=caption,fill =1,value=0);
+  124 : //plot([ux,uy],cmm=caption,fill =1,value=1);
+  125 : cout <<"iter ="  << i   <<";comp="<<J<<";vol =: "<<vol <<"___________"<<endl ;
+  126 : } sizestack + 1024 =45952  ( 44928 )
+ 
+  --  mesh:  Nb of Triangles =  21810, Nb of Vertices 11156
+Nonlinear FEA inner loop1 starts...
+  -- Solve :
+          min -0.0187274  max 0.0033112
+  .Linfty residual=0.0187274
+Nonlinear FEA inner loop2 starts...
+  -- Solve :
+          min -5.13685e-05  max 1.14285e-05
+  .Linfty residual=5.13685e-05
+Nonlinear FEA inner loop3 starts...
+  -- Solve :
+          min -1.1363e-07  max 5.12098e-07
+  .Linfty residual=5.12098e-07
+  -- Solve :
+          min -0.0184354  max 0.00335254
+ try getConsole C:\Users\user\Desktop\非线性弹性优化\优化算法\Exp1\test2\NoDSSI\PhaseField_NonlinearElastic_NoDSSI.edp

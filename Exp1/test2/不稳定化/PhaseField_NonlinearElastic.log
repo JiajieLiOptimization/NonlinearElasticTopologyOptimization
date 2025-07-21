@@ -1,0 +1,29 @@
+  -- Solve :
+          min -37410.4  max 203533
+  .Linfty residual=203533
+Nonlinear FEA inner loop16 starts...
+  -- Solve :
+          min -30099.3  max 163757
+  .Linfty residual=163757
+Nonlinear FEA inner loop17 starts...
+  -- Solve :
+          min -24158.2  max 131433
+  .Linfty residual=131433
+Nonlinear FEA inner loop18 starts...
+  -- Solve :
+          min -19342.1  max 105232
+  .Linfty residual=105232
+Nonlinear FEA inner loop19 starts...
+  -- Solve :
+          min -15447.5  max 84042.8
+  .Linfty residual=84042.8
+Nonlinear FEA inner loop20 starts...
+  -- Solve :
+          min -12306.1  max 66951.4
+  .Linfty residual=66951.4
+Nonlinear FEA inner loop21 starts...
+  -- Solve :
+          min -9778.41  max 53199.8
+  .Linfty residual=53199.8
+Nonlinear FEA inner loop22 starts...
+ try getConsole C:\Users\user\Desktop\非线性弹性优化\优化算法\Exp1\test2\不稳定化\PhaseField_NonlinearElastic.edp

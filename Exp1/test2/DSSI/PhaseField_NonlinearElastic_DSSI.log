@@ -1,0 +1,28 @@
+  107 :                  vol = int2d(th)(thetaold);
+  108 :   }
+  109 :      theta = max(0,theta);
+  110 :      theta = min(theta,1);
+  111 :      lag = lag+0.5*(vol-VolTarg);
+  112 : E = theta*(E1 - E0) + E0;
+  113 :
+  114 : real J = int1d(th,  loaded) (fx*ux + fy*uy) ;
+  115 : real   Wtotal = J + 0.5*beta*(vol-VolTarg)^2 + int2d(th)(0.5*kappa*grad(theta) [dx(theta), dy(theta)]'*grad(thet瑭Z嬐a) [dx(theta), dy(theta)]+1/(0.01)*0.25*(theta-1)^2*theta^2);
+  116 :     ofstream obj("obj.txt",append);
+  117 :         obj<<J<<endl;
+  118 :         ofstream TotalEner("totalEnergy.txt",append);
+  119 :         TotalEner<<Wtotal<<endl;
+  120 : ofstream Volerr("Volerr.txt",append);
+  121 : Volerr<<abs(vol-VolTarg)<<endl;
+  122 : string caption= " Objective: "+J +" total energy: "+Wtotal+" volume error: "+ (vol-VolTarg)+ " iter :"+i;
+  123 : plot(theta,cmm=caption,fill =1,value=0);
+  124 : //plot([ux,uy],cmm=caption,fill =1,value=1);
+  125 : cout <<"iter ="  << i   <<";comp="<<J<<";vol =: "<<vol <<"___________"<<endl ;
+  126 : } sizestack + 1024 =46592  ( 45568 )
+ 
+  --  mesh:  Nb of Triangles =  21810, Nb of Vertices 11156
+Nonlinear FEA inner loop1 starts...
+  -- Solve :
+          min -0.0187274  max 0.0033112
+  .Linfty residual=0.0187274
+Nonlinear FEA inner loop2 starts...
+ try getConsole C:\Users\user\Desktop\非线性弹性优化\优化算法\Exp1\test2\DSSI\PhaseField_NonlinearElastic_DSSI.edp
