@@ -1,0 +1,28 @@
+  103 :      AllenCahn;
+  104 :      thetaold = theta;
+  105 :      thetaold = max(0,thetaold);
+  106 :      thetaold = min(thetaold,1);
+  107 :                  vol = int2d(th)(max(min(thetaold,1),0)
+ Warning ambiguity Polymorphic Find 2
+         c(       <d> :   <d>, <d> )
+         c(       <l> :   <l>, <l> )
+ We have ambiguity 2
+ error operator (  <d>, <l>
+         c(       <d> :   <d>, <d> )
+         c(       <l> :   <l>, <l> )
+ We have ambiguity 2
+ 
+ Warning ambiguity Polymorphic Find 2
+         c(       <d> :   <d>, <d> )
+         c(       <l> :   <l>, <l> )
+ We have ambiguity 2
+ 
+ Error line number 107, in file C:\Users\user\Desktop\∑«œﬂ–‘µØ–‘”≈ªØ\”≈ªØÀ„∑®\Exp1\test1\m=3\PhaseField_NonlinearElasticÏîÅ‚_DSSI.edp, before  token )
+ 
+  current line = 107
+Compile error :
+        line number :107, )
+error Compile error :
+        line number :107, )
+ code = 1 mpirank: 0
+ try getConsole C:\Users\user\Desktop\∑«œﬂ–‘µØ–‘”≈ªØ\”≈ªØÀ„∑®\Exp1\test1\m=3\PhaseField_NonlinearElastic_DSSI.edp
